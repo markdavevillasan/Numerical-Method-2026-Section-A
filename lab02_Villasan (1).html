@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NM Laboratory Activity 02 - Reservoir Stage</title>
+
+<style>
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    background: #f5f5f5;
+    color: #222;
+}
+
+header {
+    background: #202020;
+    color: white;
+    padding: 24px 30px;
+}
+
+header h1 {
+    margin: 0 0 8px 0;
+    font-size: 27px;
+}
+
+header p {
+    margin: 4px 0;
+}
+
+.container {
+    max-width: 1250px;
+    margin: 22px auto;
+    padding: 0 18px 40px 18px;
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 18px;
+}
+
+.tab {
+    border: 1px solid #aaa;
+    background: white;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.tab.active {
+    background: #222;
+    color: white;
+}
+
+.panel {
+    display: none;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.panel.active {
+    display: block;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 14px;
+    background: #fafafa;
+}
+
+.card .label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.card .value {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.equation {
+    font-family: "Times New Roman", serif;
+    font-size: 19px;
+    background: #f0f0f0;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background: white;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 7px;
+    text-align: right;
+    font-size: 12px;
+}
+
+th {
+    background: #eeeeee;
+    position: sticky;
+    top: 0;
+}
+
+.chart {
+    overflow-x: auto;
+    margin: 15px 0;
+}
+
+.note {
+    border-left: 4px solid #555;
+    background: #f1f1f1;
+    padding: 12px;
+    margin: 15px 0;
+}
+
+.small {
+    font-size: 13px;
+    color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Numerical Methods — Laboratory Activity 02</h1>
+    <p>Fitting a Curve to the Reservoir Stage Record</p>
+    <p>96 readings · 15-minute sampling · 0.25 hour time step</p>
+</header>
+
+<div class="container">
+
+<div class="tabs">
+    <button class="tab active" onclick="showTab('overview', this)">Overview</button>
+    <button class="tab" onclick="showTab('stage', this)">Stage Log</button>
+    <button class="tab" onclick="showTab('derivatives', this)">Derivatives</button>
+    <button class="tab" onclick="showTab('fit', this)">Fitted Curve</button>
+    <button class="tab" onclick="showTab('residuals', this)">Residuals</button>
+    <button class="tab" onclick="showTab('statistics', this)">Statistics</button>
+    <button class="tab" onclick="showTab('area', this)">Area</button>
+    <button class="tab" onclick="showTab('data', this)">All Data</button>
+</div>
+
+
+<section id="overview" class="panel active">
+    <h2>Overview</h2>
+
+    <div class="card-grid">
+        <div class="card">
+            <div class="label">Readings</div>
+            <div class="value">96</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Time step</div>
+            <div class="value">0.25 h</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Maximum central dh/dt</div>
+            <div class="value">0.1000 m/h</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Maximum-rate time</div>
+            <div class="value">1.50 h</div>
+        </div>
+
+        <div class="card">
+            <div class="label">R²</div>
+            <div class="value">0.977441</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Standard error</div>
+            <div class="value">0.014219 m</div>
+        </div>
+    </div>
+
+    <h3>Selected model</h3>
+
+    <div class="equation">
+        h(t) = c + a / (1 + exp(-k(t - t₀)))
+        <br><br>
+        h(t) = 14.10600579 + 0.48529977 / (1 + exp(-0.11998783(t - 10.99007434)))
+    </div>
+
+    <div class="note">
+        <strong>Interpretation:</strong>
+        The logistic curve describes the overall rise in reservoir stage.
+        The finite differences show short-term changes in filling rate,
+        while the fitted curve provides a continuous representation of h(t).
+    </div>
+
+    <p class="small">
+        All numerical results shown here were calculated by the Python script.
+        The JavaScript in this dashboard only switches tabs.
+    </p>
+</section>
+
+
+<section id="stage" class="panel">
+    <h2>Stage Log Time Series</h2>
+    <div class="chart"><svg viewBox="0 0 950 390" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reservoir Stage Log">
+<rect x="0" y="0" width="950" height="390" fill="white" stroke="#d0d0d0"/>
+<text x="475.0" y="25" text-anchor="middle" font-family="Arial" font-size="17" font-weight="bold">Reservoir Stage Log</text>
+<line x1="75" y1="330.00" x2="925" y2="330.00" stroke="#e6e6e6"/>
+<text x="67" y="334.00" text-anchor="end" font-family="Arial" font-size="11">14.154</text>
+<line x1="75" y1="274.00" x2="925" y2="274.00" stroke="#e6e6e6"/>
+<text x="67" y="278.00" text-anchor="end" font-family="Arial" font-size="11">14.230</text>
+<line x1="75" y1="218.00" x2="925" y2="218.00" stroke="#e6e6e6"/>
+<text x="67" y="222.00" text-anchor="end" font-family="Arial" font-size="11">14.307</text>
+<line x1="75" y1="162.00" x2="925" y2="162.00" stroke="#e6e6e6"/>
+<text x="67" y="166.00" text-anchor="end" font-family="Arial" font-size="11">14.383</text>
+<line x1="75" y1="106.00" x2="925" y2="106.00" stroke="#e6e6e6"/>
+<text x="67" y="110.00" text-anchor="end" font-family="Arial" font-size="11">14.460</text>
+<line x1="75" y1="50.00" x2="925" y2="50.00" stroke="#e6e6e6"/>
+<text x="67" y="54.00" text-anchor="end" font-family="Arial" font-size="11">14.536</text>
+<line x1="75.00" y1="330" x2="75.00" y2="335" stroke="black"/>
+<text x="75.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">0.00</text>
+<line x1="181.25" y1="330" x2="181.25" y2="335" stroke="black"/>
+<text x="181.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">2.97</text>
+<line x1="287.50" y1="330" x2="287.50" y2="335" stroke="black"/>
+<text x="287.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">5.94</text>
+<line x1="393.75" y1="330" x2="393.75" y2="335" stroke="black"/>
+<text x="393.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">8.91</text>
+<line x1="500.00" y1="330" x2="500.00" y2="335" stroke="black"/>
+<text x="500.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">11.88</text>
+<line x1="606.25" y1="330" x2="606.25" y2="335" stroke="black"/>
+<text x="606.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.84</text>
+<line x1="712.50" y1="330" x2="712.50" y2="335" stroke="black"/>
+<text x="712.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">17.81</text>
+<line x1="818.75" y1="330" x2="818.75" y2="335" stroke="black"/>
+<text x="818.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">20.78</text>
+<line x1="925.00" y1="330" x2="925.00" y2="335" stroke="black"/>
+<text x="925.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">23.75</text>
+<line x1="75" y1="50" x2="75" y2="330" stroke="black"/>
+<line x1="75" y1="330" x2="925" y2="330" stroke="black"/>
+<text x="500.0" y="378" text-anchor="middle" font-family="Arial" font-size="13">Time (hours)</text>
+<text x="18" y="190.0" text-anchor="middle" transform="rotate(-90 18 190.0)" font-family="Arial" font-size="13">Depth h (m)</text>
+<polyline points="75.00,310.69 83.95,288.75 92.89,281.43 101.84,288.75 110.79,288.75 119.74,296.06 128.68,266.80 137.63,259.49 146.58,259.49 155.53,274.12 164.47,274.12 173.42,274.12 182.37,259.49 191.32,266.80 200.26,259.49 209.21,266.80 218.16,259.49 227.11,266.80 236.05,266.80 245.00,252.17 253.95,244.86 262.89,222.92 271.84,230.23 280.79,230.23 289.74,252.17 298.68,237.54 307.63,222.92 316.58,222.92 325.53,215.60 334.47,208.29 343.42,208.29 352.37,215.60 361.32,215.60 370.26,230.23 379.21,222.92 388.16,208.29 397.11,200.97 406.05,200.97 415.00,208.29 423.95,222.92 432.89,208.29 441.84,193.66 450.79,200.97 459.74,215.60 468.68,200.97 477.63,193.66 486.58,193.66 495.53,186.34 504.47,193.66 513.42,164.40 522.37,164.40 531.32,157.08 540.26,157.08 549.21,157.08 558.16,171.71 567.11,164.40 576.05,157.08 585.00,157.08 593.95,157.08 602.89,142.46 611.84,127.83 620.79,142.46 629.74,149.77 638.68,127.83 647.63,135.14 656.58,120.51 665.53,127.83 674.47,135.14 683.42,127.83 692.37,113.20 701.32,113.20 710.26,120.51 719.21,135.14 728.16,127.83 737.11,105.88 746.05,91.25 755.00,98.57 763.95,105.88 772.89,91.25 781.84,105.88 790.79,91.25 799.74,91.25 808.68,83.94 817.63,98.57 826.58,98.57 835.53,98.57 844.47,83.94 853.42,91.25 862.37,91.25 871.32,91.25 880.26,76.62 889.21,69.31 898.16,83.94 907.11,76.62 916.05,83.94 925.00,76.62" fill="none" stroke="#111111" stroke-width="2"/>
+<line x1="90" y1="65" x2="120" y2="65" stroke="#111111" stroke-width="3"/>
+<text x="128" y="69" font-family="Arial" font-size="12">Raw stage</text>
+</svg></div>
+</section>
+
+
+<section id="derivatives" class="panel">
+    <h2>Finite-Difference Derivatives</h2>
+
+    <h3>First derivative</h3>
+    <div class="chart"><svg viewBox="0 0 950 390" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="First Finite-Difference Derivatives">
+<rect x="0" y="0" width="950" height="390" fill="white" stroke="#d0d0d0"/>
+<text x="475.0" y="25" text-anchor="middle" font-family="Arial" font-size="17" font-weight="bold">First Finite-Difference Derivatives</text>
+<line x1="75" y1="330.00" x2="925" y2="330.00" stroke="#e6e6e6"/>
+<text x="67" y="334.00" text-anchor="end" font-family="Arial" font-size="11">-0.142</text>
+<line x1="75" y1="274.00" x2="925" y2="274.00" stroke="#e6e6e6"/>
+<text x="67" y="278.00" text-anchor="end" font-family="Arial" font-size="11">-0.077</text>
+<line x1="75" y1="218.00" x2="925" y2="218.00" stroke="#e6e6e6"/>
+<text x="67" y="222.00" text-anchor="end" font-family="Arial" font-size="11">-0.012</text>
+<line x1="75" y1="162.00" x2="925" y2="162.00" stroke="#e6e6e6"/>
+<text x="67" y="166.00" text-anchor="end" font-family="Arial" font-size="11">0.052</text>
+<line x1="75" y1="106.00" x2="925" y2="106.00" stroke="#e6e6e6"/>
+<text x="67" y="110.00" text-anchor="end" font-family="Arial" font-size="11">0.117</text>
+<line x1="75" y1="50.00" x2="925" y2="50.00" stroke="#e6e6e6"/>
+<text x="67" y="54.00" text-anchor="end" font-family="Arial" font-size="11">0.182</text>
+<line x1="75.00" y1="330" x2="75.00" y2="335" stroke="black"/>
+<text x="75.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">0.00</text>
+<line x1="181.25" y1="330" x2="181.25" y2="335" stroke="black"/>
+<text x="181.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">2.97</text>
+<line x1="287.50" y1="330" x2="287.50" y2="335" stroke="black"/>
+<text x="287.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">5.94</text>
+<line x1="393.75" y1="330" x2="393.75" y2="335" stroke="black"/>
+<text x="393.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">8.91</text>
+<line x1="500.00" y1="330" x2="500.00" y2="335" stroke="black"/>
+<text x="500.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">11.88</text>
+<line x1="606.25" y1="330" x2="606.25" y2="335" stroke="black"/>
+<text x="606.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.84</text>
+<line x1="712.50" y1="330" x2="712.50" y2="335" stroke="black"/>
+<text x="712.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">17.81</text>
+<line x1="818.75" y1="330" x2="818.75" y2="335" stroke="black"/>
+<text x="818.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">20.78</text>
+<line x1="925.00" y1="330" x2="925.00" y2="335" stroke="black"/>
+<text x="925.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">23.75</text>
+<line x1="75" y1="50" x2="75" y2="330" stroke="black"/>
+<line x1="75" y1="330" x2="925" y2="330" stroke="black"/>
+<text x="500.0" y="378" text-anchor="middle" font-family="Arial" font-size="13">Time (hours)</text>
+<text x="18" y="190.0" text-anchor="middle" transform="rotate(-90 18 190.0)" font-family="Arial" font-size="13">dh/dt (m/h)</text>
+<polyline points="75.00,103.79 83.95,172.76 92.89,241.72 101.84,207.24 110.79,241.72 119.74,69.31 128.68,172.76 137.63,207.24 146.58,276.21 155.53,207.24 164.47,207.24 173.42,138.28 182.37,241.72 191.32,172.76 200.26,241.72 209.21,172.76 218.16,241.72 227.11,207.24 236.05,138.28 245.00,172.76 253.95,103.79 262.89,241.72 271.84,207.24 280.79,310.69 289.74,138.28 298.68,138.28 307.63,207.24 316.58,172.76 325.53,172.76 334.47,207.24 343.42,241.72 352.37,207.24 361.32,276.21 370.26,172.76 379.21,138.28 388.16,172.76 397.11,207.24 406.05,241.72 415.00,276.21 423.95,138.28 432.89,138.28 441.84,241.72 450.79,276.21 459.74,138.28 468.68,172.76 477.63,207.24 486.58,172.76 495.53,241.72 504.47,69.31 513.42,207.24 522.37,172.76 531.32,207.24 540.26,207.24 549.21,276.21 558.16,172.76 567.11,172.76 576.05,207.24 585.00,207.24 593.95,138.28 602.89,138.28 611.84,276.21 620.79,241.72 629.74,103.79 638.68,241.72 647.63,138.28 656.58,241.72 665.53,241.72 674.47,172.76 683.42,138.28 692.37,207.24 701.32,241.72 710.26,276.21 719.21,172.76 728.16,103.79 737.11,138.28 746.05,241.72 755.00,241.72 763.95,138.28 772.89,276.21 781.84,138.28 790.79,207.24 799.74,172.76 808.68,276.21 817.63,207.24 826.58,207.24 835.53,138.28 844.47,241.72 853.42,207.24 862.37,207.24 871.32,138.28 880.26,172.76 889.21,276.21 898.16,172.76 907.11,241.72 916.05,172.76" fill="none" stroke="#d62728" stroke-width="2"/>
+<line x1="90" y1="65" x2="120" y2="65" stroke="#d62728" stroke-width="3"/>
+<text x="128" y="69" font-family="Arial" font-size="12">Forward difference</text>
+<polyline points="83.95,103.79 92.89,172.76 101.84,241.72 110.79,207.24 119.74,241.72 128.68,69.31 137.63,172.76 146.58,207.24 155.53,276.21 164.47,207.24 173.42,207.24 182.37,138.28 191.32,241.72 200.26,172.76 209.21,241.72 218.16,172.76 227.11,241.72 236.05,207.24 245.00,138.28 253.95,172.76 262.89,103.79 271.84,241.72 280.79,207.24 289.74,310.69 298.68,138.28 307.63,138.28 316.58,207.24 325.53,172.76 334.47,172.76 343.42,207.24 352.37,241.72 361.32,207.24 370.26,276.21 379.21,172.76 388.16,138.28 397.11,172.76 406.05,207.24 415.00,241.72 423.95,276.21 432.89,138.28 441.84,138.28 450.79,241.72 459.74,276.21 468.68,138.28 477.63,172.76 486.58,207.24 495.53,172.76 504.47,241.72 513.42,69.31 522.37,207.24 531.32,172.76 540.26,207.24 549.21,207.24 558.16,276.21 567.11,172.76 576.05,172.76 585.00,207.24 593.95,207.24 602.89,138.28 611.84,138.28 620.79,276.21 629.74,241.72 638.68,103.79 647.63,241.72 656.58,138.28 665.53,241.72 674.47,241.72 683.42,172.76 692.37,138.28 701.32,207.24 710.26,241.72 719.21,276.21 728.16,172.76 737.11,103.79 746.05,138.28 755.00,241.72 763.95,241.72 772.89,138.28 781.84,276.21 790.79,138.28 799.74,207.24 808.68,172.76 817.63,276.21 826.58,207.24 835.53,207.24 844.47,138.28 853.42,241.72 862.37,207.24 871.32,207.24 880.26,138.28 889.21,172.76 898.16,276.21 907.11,172.76 916.05,241.72 925.00,172.76" fill="none" stroke="#1f77b4" stroke-width="2"/>
+<line x1="90" y1="87" x2="120" y2="87" stroke="#1f77b4" stroke-width="3"/>
+<text x="128" y="91" font-family="Arial" font-size="12">Backward difference</text>
+<polyline points="83.95,138.28 92.89,207.24 101.84,224.48 110.79,224.48 119.74,155.52 128.68,121.03 137.63,190.00 146.58,241.72 155.53,241.72 164.47,207.24 173.42,172.76 182.37,190.00 191.32,207.24 200.26,207.24 209.21,207.24 218.16,207.24 227.11,224.48 236.05,172.76 245.00,155.52 253.95,138.28 262.89,172.76 271.84,224.48 280.79,258.97 289.74,224.48 298.68,138.28 307.63,172.76 316.58,190.00 325.53,172.76 334.47,190.00 343.42,224.48 352.37,224.48 361.32,241.72 370.26,224.48 379.21,155.52 388.16,155.52 397.11,190.00 406.05,224.48 415.00,258.97 423.95,207.24 432.89,138.28 441.84,190.00 450.79,258.97 459.74,207.24 468.68,155.52 477.63,190.00 486.58,190.00 495.53,207.24 504.47,155.52 513.42,138.28 522.37,190.00 531.32,190.00 540.26,207.24 549.21,241.72 558.16,224.48 567.11,172.76 576.05,190.00 585.00,207.24 593.95,172.76 602.89,138.28 611.84,207.24 620.79,258.97 629.74,172.76 638.68,172.76 647.63,190.00 656.58,190.00 665.53,241.72 674.47,207.24 683.42,155.52 692.37,172.76 701.32,224.48 710.26,258.97 719.21,224.48 728.16,138.28 737.11,121.03 746.05,190.00 755.00,241.72 763.95,190.00 772.89,207.24 781.84,207.24 790.79,172.76 799.74,190.00 808.68,224.48 817.63,241.72 826.58,207.24 835.53,172.76 844.47,190.00 853.42,224.48 862.37,207.24 871.32,172.76 880.26,155.52 889.21,224.48 898.16,224.48 907.11,207.24 916.05,207.24" fill="none" stroke="#111111" stroke-width="2"/>
+<line x1="90" y1="109" x2="120" y2="109" stroke="#111111" stroke-width="3"/>
+<text x="128" y="113" font-family="Arial" font-size="12">Central difference</text>
+<line x1="90" y1="131" x2="120" y2="131" stroke="#d62728" stroke-width="3" stroke-dasharray="8,5"/>
+<text x="128" y="135" font-family="Arial" font-size="12">Maximum central rate</text>
+</svg></div>
+
+    <h3>Second derivative</h3>
+    <div class="chart"><svg viewBox="0 0 950 390" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Second Finite-Difference Derivative">
+<rect x="0" y="0" width="950" height="390" fill="white" stroke="#d0d0d0"/>
+<text x="475.0" y="25" text-anchor="middle" font-family="Arial" font-size="17" font-weight="bold">Second Finite-Difference Derivative</text>
+<line x1="75" y1="330.00" x2="925" y2="330.00" stroke="#e6e6e6"/>
+<text x="67" y="334.00" text-anchor="end" font-family="Arial" font-size="11">-0.755</text>
+<line x1="75" y1="274.00" x2="925" y2="274.00" stroke="#e6e6e6"/>
+<text x="67" y="278.00" text-anchor="end" font-family="Arial" font-size="11">-0.421</text>
+<line x1="75" y1="218.00" x2="925" y2="218.00" stroke="#e6e6e6"/>
+<text x="67" y="222.00" text-anchor="end" font-family="Arial" font-size="11">-0.087</text>
+<line x1="75" y1="162.00" x2="925" y2="162.00" stroke="#e6e6e6"/>
+<text x="67" y="166.00" text-anchor="end" font-family="Arial" font-size="11">0.247</text>
+<line x1="75" y1="106.00" x2="925" y2="106.00" stroke="#e6e6e6"/>
+<text x="67" y="110.00" text-anchor="end" font-family="Arial" font-size="11">0.581</text>
+<line x1="75" y1="50.00" x2="925" y2="50.00" stroke="#e6e6e6"/>
+<text x="67" y="54.00" text-anchor="end" font-family="Arial" font-size="11">0.915</text>
+<line x1="75.00" y1="330" x2="75.00" y2="335" stroke="black"/>
+<text x="75.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">0.00</text>
+<line x1="181.25" y1="330" x2="181.25" y2="335" stroke="black"/>
+<text x="181.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">2.97</text>
+<line x1="287.50" y1="330" x2="287.50" y2="335" stroke="black"/>
+<text x="287.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">5.94</text>
+<line x1="393.75" y1="330" x2="393.75" y2="335" stroke="black"/>
+<text x="393.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">8.91</text>
+<line x1="500.00" y1="330" x2="500.00" y2="335" stroke="black"/>
+<text x="500.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">11.88</text>
+<line x1="606.25" y1="330" x2="606.25" y2="335" stroke="black"/>
+<text x="606.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.84</text>
+<line x1="712.50" y1="330" x2="712.50" y2="335" stroke="black"/>
+<text x="712.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">17.81</text>
+<line x1="818.75" y1="330" x2="818.75" y2="335" stroke="black"/>
+<text x="818.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">20.78</text>
+<line x1="925.00" y1="330" x2="925.00" y2="335" stroke="black"/>
+<text x="925.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">23.75</text>
+<line x1="75" y1="50" x2="75" y2="330" stroke="black"/>
+<line x1="75" y1="330" x2="925" y2="330" stroke="black"/>
+<text x="500.0" y="378" text-anchor="middle" font-family="Arial" font-size="13">Time (hours)</text>
+<text x="18" y="190.0" text-anchor="middle" transform="rotate(-90 18 190.0)" font-family="Arial" font-size="13">d²h/dt² (m/h²)</text>
+<polyline points="83.95,257.05 92.89,257.05 101.84,176.59 110.79,230.23 119.74,69.31 128.68,283.87 137.63,230.23 146.58,257.05 155.53,149.77 164.47,203.41 173.42,149.77 182.37,283.87 191.32,149.77 200.26,257.05 209.21,149.77 218.16,257.05 227.11,176.59 236.05,149.77 245.00,230.23 253.95,149.77 262.89,310.69 271.84,176.59 280.79,283.87 289.74,69.31 298.68,203.41 307.63,257.05 316.58,176.59 325.53,203.41 334.47,230.23 343.42,230.23 352.37,176.59 361.32,257.05 370.26,122.95 379.21,176.59 388.16,230.23 397.11,230.23 406.05,230.23 415.00,230.23 423.95,96.13 432.89,203.41 441.84,283.87 450.79,230.23 459.74,96.13 468.68,230.23 477.63,230.23 486.58,176.59 495.53,257.05 504.47,69.31 513.42,310.69 522.37,176.59 531.32,230.23 540.26,203.41 549.21,257.05 558.16,122.95 567.11,203.41 576.05,230.23 585.00,203.41 593.95,149.77 602.89,203.41 611.84,310.69 620.79,176.59 629.74,96.13 638.68,310.69 647.63,122.95 656.58,283.87 665.53,203.41 674.47,149.77 683.42,176.59 692.37,257.05 701.32,230.23 710.26,230.23 719.21,122.95 728.16,149.77 737.11,230.23 746.05,283.87 755.00,203.41 763.95,122.95 772.89,310.69 781.84,96.13 790.79,257.05 799.74,176.59 808.68,283.87 817.63,149.77 826.58,203.41 835.53,149.77 844.47,283.87 853.42,176.59 862.37,203.41 871.32,149.77 880.26,230.23 889.21,283.87 898.16,122.95 907.11,257.05 916.05,149.77" fill="none" stroke="#111111" stroke-width="2"/>
+<line x1="90" y1="65" x2="120" y2="65" stroke="#111111" stroke-width="3"/>
+<text x="128" y="69" font-family="Arial" font-size="12">Second derivative</text>
+</svg></div>
+
+    <div class="note">
+        The maximum central finite-difference rate is
+        <strong>0.1000 m/h</strong> at
+        <strong>1.50 h</strong>
+        (approximately 01:30 PHT).
+        The second derivative indicates whether the filling rate is
+        increasing or decreasing at each interior reading.
+    </div>
+</section>
+
+
+<section id="fit" class="panel">
+    <h2>Fitted Curve</h2>
+
+    <div class="chart"><svg viewBox="0 0 950 390" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Raw Stage and Levenberg-Marquardt Logistic Fit">
+<rect x="0" y="0" width="950" height="390" fill="white" stroke="#d0d0d0"/>
+<text x="475.0" y="25" text-anchor="middle" font-family="Arial" font-size="17" font-weight="bold">Raw Stage and Levenberg-Marquardt Logistic Fit</text>
+<line x1="75" y1="330.00" x2="925" y2="330.00" stroke="#e6e6e6"/>
+<text x="67" y="334.00" text-anchor="end" font-family="Arial" font-size="11">14.154</text>
+<line x1="75" y1="274.00" x2="925" y2="274.00" stroke="#e6e6e6"/>
+<text x="67" y="278.00" text-anchor="end" font-family="Arial" font-size="11">14.230</text>
+<line x1="75" y1="218.00" x2="925" y2="218.00" stroke="#e6e6e6"/>
+<text x="67" y="222.00" text-anchor="end" font-family="Arial" font-size="11">14.307</text>
+<line x1="75" y1="162.00" x2="925" y2="162.00" stroke="#e6e6e6"/>
+<text x="67" y="166.00" text-anchor="end" font-family="Arial" font-size="11">14.383</text>
+<line x1="75" y1="106.00" x2="925" y2="106.00" stroke="#e6e6e6"/>
+<text x="67" y="110.00" text-anchor="end" font-family="Arial" font-size="11">14.460</text>
+<line x1="75" y1="50.00" x2="925" y2="50.00" stroke="#e6e6e6"/>
+<text x="67" y="54.00" text-anchor="end" font-family="Arial" font-size="11">14.536</text>
+<line x1="75.00" y1="330" x2="75.00" y2="335" stroke="black"/>
+<text x="75.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">0.00</text>
+<line x1="181.25" y1="330" x2="181.25" y2="335" stroke="black"/>
+<text x="181.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">2.97</text>
+<line x1="287.50" y1="330" x2="287.50" y2="335" stroke="black"/>
+<text x="287.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">5.94</text>
+<line x1="393.75" y1="330" x2="393.75" y2="335" stroke="black"/>
+<text x="393.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">8.91</text>
+<line x1="500.00" y1="330" x2="500.00" y2="335" stroke="black"/>
+<text x="500.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">11.88</text>
+<line x1="606.25" y1="330" x2="606.25" y2="335" stroke="black"/>
+<text x="606.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.84</text>
+<line x1="712.50" y1="330" x2="712.50" y2="335" stroke="black"/>
+<text x="712.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">17.81</text>
+<line x1="818.75" y1="330" x2="818.75" y2="335" stroke="black"/>
+<text x="818.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">20.78</text>
+<line x1="925.00" y1="330" x2="925.00" y2="335" stroke="black"/>
+<text x="925.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">23.75</text>
+<line x1="75" y1="50" x2="75" y2="330" stroke="black"/>
+<line x1="75" y1="330" x2="925" y2="330" stroke="black"/>
+<text x="500.0" y="378" text-anchor="middle" font-family="Arial" font-size="13">Time (hours)</text>
+<text x="18" y="190.0" text-anchor="middle" transform="rotate(-90 18 190.0)" font-family="Arial" font-size="13">Depth h (m)</text>
+<polyline points="75.00,310.69 83.95,288.75 92.89,281.43 101.84,288.75 110.79,288.75 119.74,296.06 128.68,266.80 137.63,259.49 146.58,259.49 155.53,274.12 164.47,274.12 173.42,274.12 182.37,259.49 191.32,266.80 200.26,259.49 209.21,266.80 218.16,259.49 227.11,266.80 236.05,266.80 245.00,252.17 253.95,244.86 262.89,222.92 271.84,230.23 280.79,230.23 289.74,252.17 298.68,237.54 307.63,222.92 316.58,222.92 325.53,215.60 334.47,208.29 343.42,208.29 352.37,215.60 361.32,215.60 370.26,230.23 379.21,222.92 388.16,208.29 397.11,200.97 406.05,200.97 415.00,208.29 423.95,222.92 432.89,208.29 441.84,193.66 450.79,200.97 459.74,215.60 468.68,200.97 477.63,193.66 486.58,193.66 495.53,186.34 504.47,193.66 513.42,164.40 522.37,164.40 531.32,157.08 540.26,157.08 549.21,157.08 558.16,171.71 567.11,164.40 576.05,157.08 585.00,157.08 593.95,157.08 602.89,142.46 611.84,127.83 620.79,142.46 629.74,149.77 638.68,127.83 647.63,135.14 656.58,120.51 665.53,127.83 674.47,135.14 683.42,127.83 692.37,113.20 701.32,113.20 710.26,120.51 719.21,135.14 728.16,127.83 737.11,105.88 746.05,91.25 755.00,98.57 763.95,105.88 772.89,91.25 781.84,105.88 790.79,91.25 799.74,91.25 808.68,83.94 817.63,98.57 826.58,98.57 835.53,98.57 844.47,83.94 853.42,91.25 862.37,91.25 871.32,91.25 880.26,76.62 889.21,69.31 898.16,83.94 907.11,76.62 916.05,83.94 925.00,76.62" fill="none" stroke="#111111" stroke-width="2"/>
+<line x1="90" y1="65" x2="120" y2="65" stroke="#111111" stroke-width="3"/>
+<text x="128" y="69" font-family="Arial" font-size="12">Raw stage</text>
+<polyline points="75.00,289.90 83.95,288.11 92.89,286.29 101.84,284.44 110.79,282.56 119.74,280.65 128.68,278.71 137.63,276.74 146.58,274.74 155.53,272.71 164.47,270.65 173.42,268.56 182.37,266.44 191.32,264.29 200.26,262.11 209.21,259.91 218.16,257.68 227.11,255.42 236.05,253.14 245.00,250.83 253.95,248.50 262.89,246.14 271.84,243.76 280.79,241.35 289.74,238.93 298.68,236.48 307.63,234.01 316.58,231.53 325.53,229.02 334.47,226.50 343.42,223.96 352.37,221.40 361.32,218.83 370.26,216.24 379.21,213.65 388.16,211.04 397.11,208.42 406.05,205.79 415.00,203.15 423.95,200.51 432.89,197.86 441.84,195.20 450.79,192.54 459.74,189.88 468.68,187.22 477.63,184.56 486.58,181.90 495.53,179.24 504.47,176.59 513.42,173.94 522.37,171.29 531.32,168.66 540.26,166.03 549.21,163.41 558.16,160.80 567.11,158.20 576.05,155.62 585.00,153.05 593.95,150.49 602.89,147.96 611.84,145.43 620.79,142.93 629.74,140.44 638.68,137.98 647.63,135.53 656.58,133.11 665.53,130.70 674.47,128.32 683.42,125.97 692.37,123.64 701.32,121.33 710.26,119.05 719.21,116.79 728.16,114.57 737.11,112.36 746.05,110.19 755.00,108.05 763.95,105.93 772.89,103.84 781.84,101.78 790.79,99.75 799.74,97.76 808.68,95.79 817.63,93.85 826.58,91.94 835.53,90.06 844.47,88.21 853.42,86.40 862.37,84.61 871.32,82.86 880.26,81.13 889.21,79.44 898.16,77.78 907.11,76.14 916.05,74.54 925.00,72.97" fill="none" stroke="#d62728" stroke-width="2"/>
+<line x1="90" y1="87" x2="120" y2="87" stroke="#d62728" stroke-width="3"/>
+<text x="128" y="91" font-family="Arial" font-size="12">Logistic fit</text>
+</svg></div>
+
+    <h3>Model equation</h3>
+    <div class="equation">h(t) = 14.10600579 + 0.48529977 / (1 + exp(-0.11998783(t - 10.99007434)))</div>
+
+    <h3>Initial guess</h3>
+    <p>
+        p0 = [14.10, 0.50, 0.12, 11.0]
+    </p>
+</section>
+
+
+<section id="residuals" class="panel">
+    <h2>Residual Analysis</h2>
+
+    <div class="chart"><svg viewBox="0 0 950 390" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Residuals vs Time">
+<rect x="0" y="0" width="950" height="390" fill="white" stroke="#d0d0d0"/>
+<text x="475.0" y="25" text-anchor="middle" font-family="Arial" font-size="17" font-weight="bold">Residuals vs Time</text>
+<line x1="75" y1="330.00" x2="925" y2="330.00" stroke="#e6e6e6"/>
+<text x="67" y="334.00" text-anchor="end" font-family="Arial" font-size="11">-0.041</text>
+<line x1="75" y1="274.00" x2="925" y2="274.00" stroke="#e6e6e6"/>
+<text x="67" y="278.00" text-anchor="end" font-family="Arial" font-size="11">-0.025</text>
+<line x1="75" y1="218.00" x2="925" y2="218.00" stroke="#e6e6e6"/>
+<text x="67" y="222.00" text-anchor="end" font-family="Arial" font-size="11">-0.009</text>
+<line x1="75" y1="162.00" x2="925" y2="162.00" stroke="#e6e6e6"/>
+<text x="67" y="166.00" text-anchor="end" font-family="Arial" font-size="11">0.006</text>
+<line x1="75" y1="106.00" x2="925" y2="106.00" stroke="#e6e6e6"/>
+<text x="67" y="110.00" text-anchor="end" font-family="Arial" font-size="11">0.022</text>
+<line x1="75" y1="50.00" x2="925" y2="50.00" stroke="#e6e6e6"/>
+<text x="67" y="54.00" text-anchor="end" font-family="Arial" font-size="11">0.037</text>
+<line x1="75.00" y1="330" x2="75.00" y2="335" stroke="black"/>
+<text x="75.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">0.00</text>
+<line x1="181.25" y1="330" x2="181.25" y2="335" stroke="black"/>
+<text x="181.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">2.97</text>
+<line x1="287.50" y1="330" x2="287.50" y2="335" stroke="black"/>
+<text x="287.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">5.94</text>
+<line x1="393.75" y1="330" x2="393.75" y2="335" stroke="black"/>
+<text x="393.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">8.91</text>
+<line x1="500.00" y1="330" x2="500.00" y2="335" stroke="black"/>
+<text x="500.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">11.88</text>
+<line x1="606.25" y1="330" x2="606.25" y2="335" stroke="black"/>
+<text x="606.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.84</text>
+<line x1="712.50" y1="330" x2="712.50" y2="335" stroke="black"/>
+<text x="712.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">17.81</text>
+<line x1="818.75" y1="330" x2="818.75" y2="335" stroke="black"/>
+<text x="818.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">20.78</text>
+<line x1="925.00" y1="330" x2="925.00" y2="335" stroke="black"/>
+<text x="925.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">23.75</text>
+<line x1="75" y1="50" x2="75" y2="330" stroke="black"/>
+<line x1="75" y1="330" x2="925" y2="330" stroke="black"/>
+<text x="500.0" y="378" text-anchor="middle" font-family="Arial" font-size="13">Time (hours)</text>
+<text x="18" y="190.0" text-anchor="middle" transform="rotate(-90 18 190.0)" font-family="Arial" font-size="13">Residual e (m)</text>
+<polyline points="75.00,286.38 83.95,186.98 92.89,159.88 101.84,205.07 110.79,214.35 119.74,259.85 128.68,125.12 137.63,98.77 146.58,108.64 155.53,190.81 164.47,200.97 173.42,211.28 182.37,149.58 191.32,196.24 200.26,170.90 209.21,217.84 218.16,192.76 227.11,239.97 236.05,251.23 245.00,190.47 253.95,165.90 262.89,69.31 271.84,117.13 280.79,128.99 289.74,249.17 298.68,189.10 307.63,129.12 316.58,141.39 325.53,117.67 334.47,94.05 343.42,106.58 352.37,155.26 361.32,167.94 370.26,252.83 379.21,229.57 388.16,170.29 397.11,147.14 406.05,160.10 415.00,209.18 423.95,294.37 432.89,235.29 441.84,176.24 450.79,225.42 459.74,310.69 468.68,251.67 477.63,228.72 486.58,241.85 495.53,218.88 504.47,268.05 513.42,136.82 522.37,149.86 531.32,126.79 540.26,139.75 549.21,152.66 558.16,237.67 567.11,214.41 576.05,191.08 585.00,203.75 593.95,216.35 602.89,156.73 611.84,97.02 620.79,181.52 629.74,229.85 638.68,133.80 647.63,181.93 656.58,121.74 665.53,169.66 674.47,217.47 683.42,193.02 692.37,132.37 701.32,143.75 710.26,191.07 719.21,274.34 728.16,249.25 737.11,151.89 746.05,90.46 755.00,137.11 763.95,183.62 772.89,121.77 781.84,204.07 790.79,141.93 799.74,151.79 808.68,125.42 817.63,207.13 826.58,216.54 835.53,225.81 844.47,162.77 853.42,207.80 862.37,216.61 871.32,225.26 880.26,161.62 889.21,133.90 898.16,214.25 907.11,186.23 916.05,230.20 925.00,201.88" fill="none" stroke="#1f77b4" stroke-width="2"/>
+<line x1="90" y1="65" x2="120" y2="65" stroke="#1f77b4" stroke-width="3"/>
+<text x="128" y="69" font-family="Arial" font-size="12">Residual</text>
+</svg></div>
+
+    <div class="chart"><svg viewBox="0 0 950 390" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Residuals vs Fitted Value">
+<rect x="0" y="0" width="950" height="390" fill="white" stroke="#d0d0d0"/>
+<text x="475.0" y="25" text-anchor="middle" font-family="Arial" font-size="17" font-weight="bold">Residuals vs Fitted Value</text>
+<line x1="75" y1="330.00" x2="925" y2="330.00" stroke="#e6e6e6"/>
+<text x="67" y="334.00" text-anchor="end" font-family="Arial" font-size="11">-0.041</text>
+<line x1="75" y1="274.00" x2="925" y2="274.00" stroke="#e6e6e6"/>
+<text x="67" y="278.00" text-anchor="end" font-family="Arial" font-size="11">-0.025</text>
+<line x1="75" y1="218.00" x2="925" y2="218.00" stroke="#e6e6e6"/>
+<text x="67" y="222.00" text-anchor="end" font-family="Arial" font-size="11">-0.009</text>
+<line x1="75" y1="162.00" x2="925" y2="162.00" stroke="#e6e6e6"/>
+<text x="67" y="166.00" text-anchor="end" font-family="Arial" font-size="11">0.006</text>
+<line x1="75" y1="106.00" x2="925" y2="106.00" stroke="#e6e6e6"/>
+<text x="67" y="110.00" text-anchor="end" font-family="Arial" font-size="11">0.022</text>
+<line x1="75" y1="50.00" x2="925" y2="50.00" stroke="#e6e6e6"/>
+<text x="67" y="54.00" text-anchor="end" font-family="Arial" font-size="11">0.037</text>
+<line x1="75.00" y1="330" x2="75.00" y2="335" stroke="black"/>
+<text x="75.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.21</text>
+<line x1="181.25" y1="330" x2="181.25" y2="335" stroke="black"/>
+<text x="181.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.25</text>
+<line x1="287.50" y1="330" x2="287.50" y2="335" stroke="black"/>
+<text x="287.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.28</text>
+<line x1="393.75" y1="330" x2="393.75" y2="335" stroke="black"/>
+<text x="393.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.32</text>
+<line x1="500.00" y1="330" x2="500.00" y2="335" stroke="black"/>
+<text x="500.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.36</text>
+<line x1="606.25" y1="330" x2="606.25" y2="335" stroke="black"/>
+<text x="606.25" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.39</text>
+<line x1="712.50" y1="330" x2="712.50" y2="335" stroke="black"/>
+<text x="712.50" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.43</text>
+<line x1="818.75" y1="330" x2="818.75" y2="335" stroke="black"/>
+<text x="818.75" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.47</text>
+<line x1="925.00" y1="330" x2="925.00" y2="335" stroke="black"/>
+<text x="925.00" y="352" text-anchor="middle" font-family="Arial" font-size="11">14.50</text>
+<line x1="75" y1="50" x2="75" y2="330" stroke="black"/>
+<line x1="75" y1="330" x2="925" y2="330" stroke="black"/>
+<text x="500.0" y="378" text-anchor="middle" font-family="Arial" font-size="13">Fitted level (m)</text>
+<text x="18" y="190.0" text-anchor="middle" transform="rotate(-90 18 190.0)" font-family="Arial" font-size="13">Residual e (m)</text>
+<polyline points="75.00,286.38 82.01,186.98 89.13,159.88 96.38,205.07 103.75,214.35 111.24,259.85 118.84,125.12 126.57,98.77 134.41,108.64 142.37,190.81 150.44,200.97 158.63,211.28 166.93,149.58 175.35,196.24 183.87,170.90 192.50,217.84 201.24,192.76 210.09,239.97 219.03,251.23 228.08,190.47 237.22,165.90 246.46,69.31 255.79,117.13 265.21,128.99 274.72,249.17 284.31,189.10 293.98,129.12 303.73,141.39 313.55,117.67 323.44,94.05 333.39,106.58 343.41,155.26 353.48,167.94 363.61,252.83 373.79,229.57 384.01,170.29 394.27,147.14 404.58,160.10 414.91,209.18 425.27,294.37 435.65,235.29 446.06,176.24 456.47,225.42 466.90,310.69 477.33,251.67 487.76,228.72 498.18,241.85 508.60,218.88 519.00,268.05 529.38,136.82 539.74,149.86 550.07,126.79 560.37,139.75 570.63,152.66 580.85,237.67 591.02,214.41 601.15,191.08 611.22,203.75 621.23,216.35 631.18,156.73 641.06,97.02 650.88,181.52 660.62,229.85 670.28,133.80 679.87,181.93 689.37,121.74 698.78,169.66 708.10,217.47 717.33,193.02 726.47,132.37 735.51,143.75 744.45,191.07 753.28,274.34 762.01,249.25 770.64,151.89 779.15,90.46 787.56,137.11 795.85,183.62 804.03,121.77 812.09,204.07 820.04,141.93 827.88,151.79 835.59,125.42 843.19,207.13 850.67,216.54 858.02,225.81 865.26,162.77 872.38,207.80 879.38,216.61 886.26,225.26 893.01,161.62 899.65,133.90 906.17,214.25 912.56,186.23 918.84,230.20 925.00,201.88" fill="none" stroke="#1f77b4" stroke-width="2"/>
+<line x1="90" y1="65" x2="120" y2="65" stroke="#1f77b4" stroke-width="3"/>
+<text x="128" y="69" font-family="Arial" font-size="12">Residual</text>
+</svg></div>
+
+    <div class="note">
+        <strong>Residual reading:</strong>
+        The residuals are generally centered around zero, but short runs of
+        positive and negative residuals remain. This indicates that the
+        logistic model captures the overall trend but cannot reproduce every
+        short-term fluctuation in the centimeter-rounded logger data.
+    </div>
+
+    <div class="card-grid">
+        <div class="card">
+            <div class="label">Largest absolute residual</div>
+            <div class="value">0.035161 m</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Time of largest residual</div>
+            <div class="value">10.75 h</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Logger resolution</div>
+            <div class="value">0.010000 m</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Largest residual / resolution</div>
+            <div class="value">3.52 ×</div>
+        </div>
+    </div>
+</section>
+
+
+<section id="statistics" class="panel">
+    <h2>Fitted Parameters and Statistics</h2>
+
+    <h3>Parameter statistics</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Estimate</th>
+                <th>Std. Error</th>
+                <th>t statistic</th>
+                <th>Two-tailed p-value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>c</td><td>14.10600579</td><td>0.05017039</td><td>281.161946</td><td>< 0.000001</td></tr><tr><td>a</td><td>0.48529977</td><td>0.08958716</td><td>5.417069</td><td>< 0.000001</td></tr><tr><td>k</td><td>0.11998783</td><td>0.02650435</td><td>4.527099</td><td>0.00001787</td></tr><tr><td>t0</td><td>10.99007434</td><td>0.89855038</td><td>12.230894</td><td>< 0.000001</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Goodness-of-fit statistics</h3>
+
+    <div class="card-grid">
+        <div class="card">
+            <div class="label">SSE</div>
+            <div class="value">0.0185999466</div>
+        </div>
+
+        <div class="card">
+            <div class="label">SST</div>
+            <div class="value">0.8244906250</div>
+        </div>
+
+        <div class="card">
+            <div class="label">R²</div>
+            <div class="value">0.9774406815</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Standard error s</div>
+            <div class="value">0.0142187669 m</div>
+        </div>
+
+        <div class="card">
+            <div class="label">n</div>
+            <div class="value">96</div>
+        </div>
+
+        <div class="card">
+            <div class="label">p</div>
+            <div class="value">4</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Degrees of freedom</div>
+            <div class="value">92</div>
+        </div>
+    </div>
+</section>
+
+
+<section id="area" class="panel">
+    <h2>Area Under the Fitted Curve</h2>
+
+    <p>
+        Limits:
+        <strong>0.00 h to 23.75 h</strong>
+    </p>
+
+    <div class="card-grid">
+        <div class="card">
+            <div class="label">Area using scipy.integrate.quad</div>
+            <div class="value">341.0433284462 m·h</div>
+        </div>
+
+        <div class="card">
+            <div class="label">quad absolute error estimate</div>
+            <div class="value">3.7863e-12</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Raw-data trapezoid</div>
+            <div class="value">341.0475000000 m·h</div>
+        </div>
+
+        <div class="card">
+            <div class="label">Difference</div>
+            <div class="value">0.0041715538 m·h</div>
+        </div>
+    </div>
+
+    <div class="note">
+        The area is measured in <strong>meter-hours (m·h)</strong>, not volume.
+        The small difference between quad and the trapezoidal cross-check
+        occurs because quad integrates the continuous fitted logistic function,
+        while the trapezoidal method integrates the discrete raw readings.
+    </div>
+</section>
+
+
+<section id="data" class="panel">
+    <h2>All 96 Calculated Rows</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Reading</th>
+                <th>Time (h)</th>
+                <th>Depth (m)</th>
+                <th>Forward (m/h)</th>
+                <th>Backward (m/h)</th>
+                <th>Central (m/h)</th>
+                <th>Second (m/h²)</th>
+                <th>Fitted (m)</th>
+                <th>Residual (m)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>1</td><td>0.00</td><td>14.18</td><td>0.1200</td><td></td><td></td><td></td><td>14.208423</td><td>-0.028423</td></tr><tr><td>2</td><td>0.25</td><td>14.21</td><td>0.0400</td><td>0.1200</td><td>0.0800</td><td>-0.3200</td><td>14.210868</td><td>-0.000868</td></tr><tr><td>3</td><td>0.50</td><td>14.22</td><td>-0.0400</td><td>0.0400</td><td>0.0000</td><td>-0.3200</td><td>14.213355</td><td>0.006645</td></tr><tr><td>4</td><td>0.75</td><td>14.21</td><td>0.0000</td><td>-0.0400</td><td>-0.0200</td><td>0.1600</td><td>14.215883</td><td>-0.005883</td></tr><tr><td>5</td><td>1.00</td><td>14.21</td><td>-0.0400</td><td>0.0000</td><td>-0.0200</td><td>-0.1600</td><td>14.218454</td><td>-0.008454</td></tr><tr><td>6</td><td>1.25</td><td>14.20</td><td>0.1600</td><td>-0.0400</td><td>0.0600</td><td>0.8000</td><td>14.221066</td><td>-0.021066</td></tr><tr><td>7</td><td>1.50</td><td>14.24</td><td>0.0400</td><td>0.1600</td><td>0.1000</td><td>-0.4800</td><td>14.223720</td><td>0.016280</td></tr><tr><td>8</td><td>1.75</td><td>14.25</td><td>0.0000</td><td>0.0400</td><td>0.0200</td><td>-0.1600</td><td>14.226415</td><td>0.023585</td></tr><tr><td>9</td><td>2.00</td><td>14.25</td><td>-0.0800</td><td>0.0000</td><td>-0.0400</td><td>-0.3200</td><td>14.229152</td><td>0.020848</td></tr><tr><td>10</td><td>2.25</td><td>14.23</td><td>0.0000</td><td>-0.0800</td><td>-0.0400</td><td>0.3200</td><td>14.231929</td><td>-0.001929</td></tr><tr><td>11</td><td>2.50</td><td>14.23</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>14.234746</td><td>-0.004746</td></tr><tr><td>12</td><td>2.75</td><td>14.23</td><td>0.0800</td><td>0.0000</td><td>0.0400</td><td>0.3200</td><td>14.237603</td><td>-0.007603</td></tr><tr><td>13</td><td>3.00</td><td>14.25</td><td>-0.0400</td><td>0.0800</td><td>0.0200</td><td>-0.4800</td><td>14.240500</td><td>0.009500</td></tr><tr><td>14</td><td>3.25</td><td>14.24</td><td>0.0400</td><td>-0.0400</td><td>0.0000</td><td>0.3200</td><td>14.243436</td><td>-0.003436</td></tr><tr><td>15</td><td>3.50</td><td>14.25</td><td>-0.0400</td><td>0.0400</td><td>0.0000</td><td>-0.3200</td><td>14.246410</td><td>0.003590</td></tr><tr><td>16</td><td>3.75</td><td>14.24</td><td>0.0400</td><td>-0.0400</td><td>0.0000</td><td>0.3200</td><td>14.249422</td><td>-0.009422</td></tr><tr><td>17</td><td>4.00</td><td>14.25</td><td>-0.0400</td><td>0.0400</td><td>0.0000</td><td>-0.3200</td><td>14.252471</td><td>-0.002471</td></tr><tr><td>18</td><td>4.25</td><td>14.24</td><td>0.0000</td><td>-0.0400</td><td>-0.0200</td><td>0.1600</td><td>14.255557</td><td>-0.015557</td></tr><tr><td>19</td><td>4.50</td><td>14.24</td><td>0.0800</td><td>0.0000</td><td>0.0400</td><td>0.3200</td><td>14.258678</td><td>-0.018678</td></tr><tr><td>20</td><td>4.75</td><td>14.26</td><td>0.0400</td><td>0.0800</td><td>0.0600</td><td>-0.1600</td><td>14.261834</td><td>-0.001834</td></tr><tr><td>21</td><td>5.00</td><td>14.27</td><td>0.1200</td><td>0.0400</td><td>0.0800</td><td>0.3200</td><td>14.265025</td><td>0.004975</td></tr><tr><td>22</td><td>5.25</td><td>14.30</td><td>-0.0400</td><td>0.1200</td><td>0.0400</td><td>-0.6400</td><td>14.268248</td><td>0.031752</td></tr><tr><td>23</td><td>5.50</td><td>14.29</td><td>0.0000</td><td>-0.0400</td><td>-0.0200</td><td>0.1600</td><td>14.271504</td><td>0.018496</td></tr><tr><td>24</td><td>5.75</td><td>14.29</td><td>-0.1200</td><td>0.0000</td><td>-0.0600</td><td>-0.4800</td><td>14.274791</td><td>0.015209</td></tr><tr><td>25</td><td>6.00</td><td>14.26</td><td>0.0800</td><td>-0.1200</td><td>-0.0200</td><td>0.8000</td><td>14.278108</td><td>-0.018108</td></tr><tr><td>26</td><td>6.25</td><td>14.28</td><td>0.0800</td><td>0.0800</td><td>0.0800</td><td>0.0000</td><td>14.281454</td><td>-0.001454</td></tr><tr><td>27</td><td>6.50</td><td>14.30</td><td>0.0000</td><td>0.0800</td><td>0.0400</td><td>-0.3200</td><td>14.284828</td><td>0.015172</td></tr><tr><td>28</td><td>6.75</td><td>14.30</td><td>0.0400</td><td>0.0000</td><td>0.0200</td><td>0.1600</td><td>14.288229</td><td>0.011771</td></tr><tr><td>29</td><td>7.00</td><td>14.31</td><td>0.0400</td><td>0.0400</td><td>0.0400</td><td>0.0000</td><td>14.291655</td><td>0.018345</td></tr><tr><td>30</td><td>7.25</td><td>14.32</td><td>0.0000</td><td>0.0400</td><td>0.0200</td><td>-0.1600</td><td>14.295105</td><td>0.024895</td></tr><tr><td>31</td><td>7.50</td><td>14.32</td><td>-0.0400</td><td>0.0000</td><td>-0.0200</td><td>-0.1600</td><td>14.298579</td><td>0.021421</td></tr><tr><td>32</td><td>7.75</td><td>14.31</td><td>0.0000</td><td>-0.0400</td><td>-0.0200</td><td>0.1600</td><td>14.302073</td><td>0.007927</td></tr><tr><td>33</td><td>8.00</td><td>14.31</td><td>-0.0800</td><td>0.0000</td><td>-0.0400</td><td>-0.3200</td><td>14.305589</td><td>0.004411</td></tr><tr><td>34</td><td>8.25</td><td>14.29</td><td>0.0400</td><td>-0.0800</td><td>-0.0200</td><td>0.4800</td><td>14.309122</td><td>-0.019122</td></tr><tr><td>35</td><td>8.50</td><td>14.30</td><td>0.0800</td><td>0.0400</td><td>0.0600</td><td>0.1600</td><td>14.312674</td><td>-0.012674</td></tr><tr><td>36</td><td>8.75</td><td>14.32</td><td>0.0400</td><td>0.0800</td><td>0.0600</td><td>-0.1600</td><td>14.316241</td><td>0.003759</td></tr><tr><td>37</td><td>9.00</td><td>14.33</td><td>0.0000</td><td>0.0400</td><td>0.0200</td><td>-0.1600</td><td>14.319822</td><td>0.010178</td></tr><tr><td>38</td><td>9.25</td><td>14.33</td><td>-0.0400</td><td>0.0000</td><td>-0.0200</td><td>-0.1600</td><td>14.323416</td><td>0.006584</td></tr><tr><td>39</td><td>9.50</td><td>14.32</td><td>-0.0800</td><td>-0.0400</td><td>-0.0600</td><td>-0.1600</td><td>14.327021</td><td>-0.007021</td></tr><tr><td>40</td><td>9.75</td><td>14.30</td><td>0.0800</td><td>-0.0800</td><td>0.0000</td><td>0.6400</td><td>14.330637</td><td>-0.030637</td></tr><tr><td>41</td><td>10.00</td><td>14.32</td><td>0.0800</td><td>0.0800</td><td>0.0800</td><td>0.0000</td><td>14.334260</td><td>-0.014260</td></tr><tr><td>42</td><td>10.25</td><td>14.34</td><td>-0.0400</td><td>0.0800</td><td>0.0200</td><td>-0.4800</td><td>14.337889</td><td>0.002111</td></tr><tr><td>43</td><td>10.50</td><td>14.33</td><td>-0.0800</td><td>-0.0400</td><td>-0.0600</td><td>-0.1600</td><td>14.341523</td><td>-0.011523</td></tr><tr><td>44</td><td>10.75</td><td>14.31</td><td>0.0800</td><td>-0.0800</td><td>0.0000</td><td>0.6400</td><td>14.345161</td><td>-0.035161</td></tr><tr><td>45</td><td>11.00</td><td>14.33</td><td>0.0400</td><td>0.0800</td><td>0.0600</td><td>-0.1600</td><td>14.348800</td><td>-0.018800</td></tr><tr><td>46</td><td>11.25</td><td>14.34</td><td>0.0000</td><td>0.0400</td><td>0.0200</td><td>-0.1600</td><td>14.352439</td><td>-0.012439</td></tr><tr><td>47</td><td>11.50</td><td>14.34</td><td>0.0400</td><td>0.0000</td><td>0.0200</td><td>0.1600</td><td>14.356077</td><td>-0.016077</td></tr><tr><td>48</td><td>11.75</td><td>14.35</td><td>-0.0400</td><td>0.0400</td><td>0.0000</td><td>-0.3200</td><td>14.359711</td><td>-0.009711</td></tr><tr><td>49</td><td>12.00</td><td>14.34</td><td>0.1600</td><td>-0.0400</td><td>0.0600</td><td>0.8000</td><td>14.363340</td><td>-0.023340</td></tr><tr><td>50</td><td>12.25</td><td>14.38</td><td>0.0000</td><td>0.1600</td><td>0.0800</td><td>-0.6400</td><td>14.366962</td><td>0.013038</td></tr><tr><td>51</td><td>12.50</td><td>14.38</td><td>0.0400</td><td>0.0000</td><td>0.0200</td><td>0.1600</td><td>14.370577</td><td>0.009423</td></tr><tr><td>52</td><td>12.75</td><td>14.39</td><td>0.0000</td><td>0.0400</td><td>0.0200</td><td>-0.1600</td><td>14.374181</td><td>0.015819</td></tr><tr><td>53</td><td>13.00</td><td>14.39</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>14.377774</td><td>0.012226</td></tr><tr><td>54</td><td>13.25</td><td>14.39</td><td>-0.0800</td><td>0.0000</td><td>-0.0400</td><td>-0.3200</td><td>14.381354</td><td>0.008646</td></tr><tr><td>55</td><td>13.50</td><td>14.37</td><td>0.0400</td><td>-0.0800</td><td>-0.0200</td><td>0.4800</td><td>14.384920</td><td>-0.014920</td></tr><tr><td>56</td><td>13.75</td><td>14.38</td><td>0.0400</td><td>0.0400</td><td>0.0400</td><td>-0.0000</td><td>14.388470</td><td>-0.008470</td></tr><tr><td>57</td><td>14.00</td><td>14.39</td><td>0.0000</td><td>0.0400</td><td>0.0200</td><td>-0.1600</td><td>14.392003</td><td>-0.002003</td></tr><tr><td>58</td><td>14.25</td><td>14.39</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>14.395516</td><td>-0.005516</td></tr><tr><td>59</td><td>14.50</td><td>14.39</td><td>0.0800</td><td>0.0000</td><td>0.0400</td><td>0.3200</td><td>14.399009</td><td>-0.009009</td></tr><tr><td>60</td><td>14.75</td><td>14.41</td><td>0.0800</td><td>0.0800</td><td>0.0800</td><td>0.0000</td><td>14.402481</td><td>0.007519</td></tr><tr><td>61</td><td>15.00</td><td>14.43</td><td>-0.0800</td><td>0.0800</td><td>0.0000</td><td>-0.6400</td><td>14.405930</td><td>0.024070</td></tr><tr><td>62</td><td>15.25</td><td>14.41</td><td>-0.0400</td><td>-0.0800</td><td>-0.0600</td><td>0.1600</td><td>14.409354</td><td>0.000646</td></tr><tr><td>63</td><td>15.50</td><td>14.40</td><td>0.1200</td><td>-0.0400</td><td>0.0400</td><td>0.6400</td><td>14.412752</td><td>-0.012752</td></tr><tr><td>64</td><td>15.75</td><td>14.43</td><td>-0.0400</td><td>0.1200</td><td>0.0400</td><td>-0.6400</td><td>14.416124</td><td>0.013876</td></tr><tr><td>65</td><td>16.00</td><td>14.42</td><td>0.0800</td><td>-0.0400</td><td>0.0200</td><td>0.4800</td><td>14.419468</td><td>0.000532</td></tr><tr><td>66</td><td>16.25</td><td>14.44</td><td>-0.0400</td><td>0.0800</td><td>0.0200</td><td>-0.4800</td><td>14.422783</td><td>0.017217</td></tr><tr><td>67</td><td>16.50</td><td>14.43</td><td>-0.0400</td><td>-0.0400</td><td>-0.0400</td><td>0.0000</td><td>14.426067</td><td>0.003933</td></tr><tr><td>68</td><td>16.75</td><td>14.42</td><td>0.0400</td><td>-0.0400</td><td>0.0000</td><td>0.3200</td><td>14.429320</td><td>-0.009320</td></tr><tr><td>69</td><td>17.00</td><td>14.43</td><td>0.0800</td><td>0.0400</td><td>0.0600</td><td>0.1600</td><td>14.432541</td><td>-0.002541</td></tr><tr><td>70</td><td>17.25</td><td>14.45</td><td>0.0000</td><td>0.0800</td><td>0.0400</td><td>-0.3200</td><td>14.435729</td><td>0.014271</td></tr><tr><td>71</td><td>17.50</td><td>14.45</td><td>-0.0400</td><td>0.0000</td><td>-0.0200</td><td>-0.1600</td><td>14.438882</td><td>0.011118</td></tr><tr><td>72</td><td>17.75</td><td>14.44</td><td>-0.0800</td><td>-0.0400</td><td>-0.0600</td><td>-0.1600</td><td>14.442001</td><td>-0.002001</td></tr><tr><td>73</td><td>18.00</td><td>14.42</td><td>0.0400</td><td>-0.0800</td><td>-0.0200</td><td>0.4800</td><td>14.445084</td><td>-0.025084</td></tr><tr><td>74</td><td>18.25</td><td>14.43</td><td>0.1200</td><td>0.0400</td><td>0.0800</td><td>0.3200</td><td>14.448130</td><td>-0.018130</td></tr><tr><td>75</td><td>18.50</td><td>14.46</td><td>0.0800</td><td>0.1200</td><td>0.1000</td><td>-0.1600</td><td>14.451139</td><td>0.008861</td></tr><tr><td>76</td><td>18.75</td><td>14.48</td><td>-0.0400</td><td>0.0800</td><td>0.0200</td><td>-0.4800</td><td>14.454110</td><td>0.025890</td></tr><tr><td>77</td><td>19.00</td><td>14.47</td><td>-0.0400</td><td>-0.0400</td><td>-0.0400</td><td>0.0000</td><td>14.457043</td><td>0.012957</td></tr><tr><td>78</td><td>19.25</td><td>14.46</td><td>0.0800</td><td>-0.0400</td><td>0.0200</td><td>0.4800</td><td>14.459936</td><td>0.000064</td></tr><tr><td>79</td><td>19.50</td><td>14.48</td><td>-0.0800</td><td>0.0800</td><td>0.0000</td><td>-0.6400</td><td>14.462791</td><td>0.017209</td></tr><tr><td>80</td><td>19.75</td><td>14.46</td><td>0.0800</td><td>-0.0800</td><td>0.0000</td><td>0.6400</td><td>14.465605</td><td>-0.005605</td></tr><tr><td>81</td><td>20.00</td><td>14.48</td><td>0.0000</td><td>0.0800</td><td>0.0400</td><td>-0.3200</td><td>14.468378</td><td>0.011622</td></tr><tr><td>82</td><td>20.25</td><td>14.48</td><td>0.0400</td><td>0.0000</td><td>0.0200</td><td>0.1600</td><td>14.471111</td><td>0.008889</td></tr><tr><td>83</td><td>20.50</td><td>14.49</td><td>-0.0800</td><td>0.0400</td><td>-0.0200</td><td>-0.4800</td><td>14.473803</td><td>0.016197</td></tr><tr><td>84</td><td>20.75</td><td>14.47</td><td>0.0000</td><td>-0.0800</td><td>-0.0400</td><td>0.3200</td><td>14.476454</td><td>-0.006454</td></tr><tr><td>85</td><td>21.00</td><td>14.47</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>14.479063</td><td>-0.009063</td></tr><tr><td>86</td><td>21.25</td><td>14.47</td><td>0.0800</td><td>0.0000</td><td>0.0400</td><td>0.3200</td><td>14.481630</td><td>-0.011630</td></tr><tr><td>87</td><td>21.50</td><td>14.49</td><td>-0.0400</td><td>0.0800</td><td>0.0200</td><td>-0.4800</td><td>14.484156</td><td>0.005844</td></tr><tr><td>88</td><td>21.75</td><td>14.48</td><td>0.0000</td><td>-0.0400</td><td>-0.0200</td><td>0.1600</td><td>14.486639</td><td>-0.006639</td></tr><tr><td>89</td><td>22.00</td><td>14.48</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>0.0000</td><td>14.489081</td><td>-0.009081</td></tr><tr><td>90</td><td>22.25</td><td>14.48</td><td>0.0800</td><td>0.0000</td><td>0.0400</td><td>0.3200</td><td>14.491480</td><td>-0.011480</td></tr><tr><td>91</td><td>22.50</td><td>14.50</td><td>0.0400</td><td>0.0800</td><td>0.0600</td><td>-0.1600</td><td>14.493838</td><td>0.006162</td></tr><tr><td>92</td><td>22.75</td><td>14.51</td><td>-0.0800</td><td>0.0400</td><td>-0.0200</td><td>-0.4800</td><td>14.496153</td><td>0.013847</td></tr><tr><td>93</td><td>23.00</td><td>14.49</td><td>0.0400</td><td>-0.0800</td><td>-0.0200</td><td>0.4800</td><td>14.498427</td><td>-0.008427</td></tr><tr><td>94</td><td>23.25</td><td>14.50</td><td>-0.0400</td><td>0.0400</td><td>0.0000</td><td>-0.3200</td><td>14.500659</td><td>-0.000659</td></tr><tr><td>95</td><td>23.50</td><td>14.49</td><td>0.0400</td><td>-0.0400</td><td>0.0000</td><td>0.3200</td><td>14.502850</td><td>-0.012850</td></tr><tr><td>96</td><td>23.75</td><td>14.50</td><td></td><td>0.0400</td><td></td><td></td><td>14.504999</td><td>-0.004999</td></tr>
+        </tbody>
+    </table>
+</section>
+
+</div>
+
+
+<script>
+function showTab(id, button) {
+    document.querySelectorAll(".panel").forEach(function(panel) {
+        panel.classList.remove("active");
+    });
+
+    document.querySelectorAll(".tab").forEach(function(tab) {
+        tab.classList.remove("active");
+    });
+
+    document.getElementById(id).classList.add("active");
+    button.classList.add("active");
+}
+</script>
+
+<!--
+All calculated values are embedded below as JSON produced by Python.
+JavaScript does not use this data for calculations.
+-->
+<script type="application/json" id="calculated-data">
+{
+  &quot;n&quot;: 96,
+  &quot;parameters&quot;: {
+    &quot;c&quot;: 14.106005786878153,
+    &quot;a&quot;: 0.4852997732046357,
+    &quot;k&quot;: 0.11998782651854871,
+    &quot;t0&quot;: 10.990074338633514
+  },
+  &quot;sse&quot;: 0.018599946568801085,
+  &quot;sst&quot;: 0.8244906250000004,
+  &quot;r2&quot;: 0.9774406815495311,
+  &quot;standard_error_m&quot;: 0.014218766903975078,
+  &quot;df&quot;: 92,
+  &quot;max_rate_m_per_h&quot;: 0.10000000000000142,
+  &quot;max_rate_time_h&quot;: 1.5,
+  &quot;area_m_hour&quot;: 341.04332844621416,
+  &quot;quad_error&quot;: 3.7863415563578656e-12,
+  &quot;raw_trapezoid_m_hour&quot;: 341.04749999999996,
+  &quot;area_difference_m_hour&quot;: 0.004171553785795368,
+  &quot;records&quot;: [
+    {
+      &quot;reading&quot;: 1,
+      &quot;time_hours&quot;: 0.0,
+      &quot;depth_m&quot;: 14.18,
+      &quot;forward_m_per_h&quot;: 0.12000000000000455,
+      &quot;backward_m_per_h&quot;: null,
+      &quot;central_m_per_h&quot;: null,
+      &quot;second_m_per_h2&quot;: null,
+      &quot;fitted_m&quot;: 14.208422869258923,
+      &quot;residual_m&quot;: -0.028422869258923456
+    },
+    {
+      &quot;reading&quot;: 2,
+      &quot;time_hours&quot;: 0.25,
+      &quot;depth_m&quot;: 14.21,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.12000000000000455,
+      &quot;central_m_per_h&quot;: 0.08000000000000185,
+      &quot;second_m_per_h2&quot;: -0.3200000000000216,
+      &quot;fitted_m&quot;: 14.210867725047303,
+      &quot;residual_m&quot;: -0.000867725047301704
+    },
+    {
+      &quot;reading&quot;: 3,
+      &quot;time_hours&quot;: 0.5,
+      &quot;depth_m&quot;: 14.22,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: -0.3199999999999932,
+      &quot;fitted_m&quot;: 14.213354580265682,
+      &quot;residual_m&quot;: 0.006645419734319091
+    },
+    {
+      &quot;reading&quot;: 4,
+      &quot;time_hours&quot;: 0.75,
+      &quot;depth_m&quot;: 14.21,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.1599999999999966,
+      &quot;fitted_m&quot;: 14.215883378861843,
+      &quot;residual_m&quot;: -0.005883378861842203
+    },
+    {
+      &quot;reading&quot;: 5,
+      &quot;time_hours&quot;: 1.0,
+      &quot;depth_m&quot;: 14.21,
+      &quot;forward_m_per_h&quot;: -0.04000000000000625,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: -0.020000000000003126,
+      &quot;second_m_per_h2&quot;: -0.160000000000025,
+      &quot;fitted_m&quot;: 14.218454024508361,
+      &quot;residual_m&quot;: -0.008454024508360192
+    },
+    {
+      &quot;reading&quot;: 6,
+      &quot;time_hours&quot;: 1.25,
+      &quot;depth_m&quot;: 14.2,
+      &quot;forward_m_per_h&quot;: 0.1600000000000037,
+      &quot;backward_m_per_h&quot;: -0.04000000000000625,
+      &quot;central_m_per_h&quot;: 0.05999999999999872,
+      &quot;second_m_per_h2&quot;: 0.8000000000000398,
+      &quot;fitted_m&quot;: 14.221066379395324,
+      &quot;residual_m&quot;: -0.021066379395325185
+    },
+    {
+      &quot;reading&quot;: 7,
+      &quot;time_hours&quot;: 1.5,
+      &quot;depth_m&quot;: 14.24,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.1600000000000037,
+      &quot;central_m_per_h&quot;: 0.10000000000000142,
+      &quot;second_m_per_h2&quot;: -0.4800000000000182,
+      &quot;fitted_m&quot;: 14.2237202630751,
+      &quot;residual_m&quot;: 0.01627973692490059
+    },
+    {
+      &quot;reading&quot;: 8,
+      &quot;time_hours&quot;: 1.75,
+      &quot;depth_m&quot;: 14.25,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.226415451365465,
+      &quot;residual_m&quot;: 0.02358454863453474
+    },
+    {
+      &quot;reading&quot;: 9,
+      &quot;time_hours&quot;: 2.0,
+      &quot;depth_m&quot;: 14.25,
+      &quot;forward_m_per_h&quot;: -0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: -0.03999999999999915,
+      &quot;second_m_per_h2&quot;: -0.3199999999999932,
+      &quot;fitted_m&quot;: 14.229151675317476,
+      &quot;residual_m&quot;: 0.02084832468252351
+    },
+    {
+      &quot;reading&quot;: 10,
+      &quot;time_hours&quot;: 2.25,
+      &quot;depth_m&quot;: 14.23,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: -0.0799999999999983,
+      &quot;central_m_per_h&quot;: -0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.23192862025455,
+      &quot;residual_m&quot;: -0.001928620254549429
+    },
+    {
+      &quot;reading&quot;: 11,
+      &quot;time_hours&quot;: 2.5,
+      &quot;depth_m&quot;: 14.23,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.0,
+      &quot;fitted_m&quot;: 14.234745924889099,
+      &quot;residual_m&quot;: -0.0047459248890984185
+    },
+    {
+      &quot;reading&quot;: 12,
+      &quot;time_hours&quot;: 2.75,
+      &quot;depth_m&quot;: 14.23,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.237603180523177,
+      &quot;residual_m&quot;: -0.007603180523176434
+    },
+    {
+      &quot;reading&quot;: 13,
+      &quot;time_hours&quot;: 3.0,
+      &quot;depth_m&quot;: 14.25,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.47999999999998977,
+      &quot;fitted_m&quot;: 14.240499930339348,
+      &quot;residual_m&quot;: 0.009500069660651533
+    },
+    {
+      &quot;reading&quot;: 14,
+      &quot;time_hours&quot;: 3.25,
+      &quot;depth_m&quot;: 14.24,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.24343566878798,
+      &quot;residual_m&quot;: -0.0034356687879792958
+    },
+    {
+      &quot;reading&quot;: 15,
+      &quot;time_hours&quot;: 3.5,
+      &quot;depth_m&quot;: 14.25,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: -0.3199999999999932,
+      &quot;fitted_m&quot;: 14.246409841076916,
+      &quot;residual_m&quot;: 0.003590158923083564
+    },
+    {
+      &quot;reading&quot;: 16,
+      &quot;time_hours&quot;: 3.75,
+      &quot;depth_m&quot;: 14.24,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.249421842769326,
+      &quot;residual_m&quot;: -0.009421842769326005
+    },
+    {
+      &quot;reading&quot;: 17,
+      &quot;time_hours&quot;: 4.0,
+      &quot;depth_m&quot;: 14.25,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: -0.3199999999999932,
+      &quot;fitted_m&quot;: 14.252471019495182,
+      &quot;residual_m&quot;: -0.0024710194951822473
+    },
+    {
+      &quot;reading&quot;: 18,
+      &quot;time_hours&quot;: 4.25,
+      &quot;depth_m&quot;: 14.24,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.1599999999999966,
+      &quot;fitted_m&quot;: 14.25555666678162,
+      &quot;residual_m&quot;: -0.015556666781620265
+    },
+    {
+      &quot;reading&quot;: 19,
+      &quot;time_hours&quot;: 4.5,
+      &quot;depth_m&quot;: 14.24,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.258678030006958,
+      &quot;residual_m&quot;: -0.018678030006958224
+    },
+    {
+      &quot;reading&quot;: 20,
+      &quot;time_hours&quot;: 4.75,
+      &quot;depth_m&quot;: 14.26,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.05999999999999872,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.261834304482827,
+      &quot;residual_m&quot;: -0.001834304482827065
+    },
+    {
+      &quot;reading&quot;: 21,
+      &quot;time_hours&quot;: 5.0,
+      &quot;depth_m&quot;: 14.27,
+      &quot;forward_m_per_h&quot;: 0.12000000000000455,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.08000000000000185,
+      &quot;second_m_per_h2&quot;: 0.3200000000000216,
+      &quot;fitted_m&quot;: 14.26502463566839,
+      &quot;residual_m&quot;: 0.004975364331610166
+    },
+    {
+      &quot;reading&quot;: 22,
+      &quot;time_hours&quot;: 5.25,
+      &quot;depth_m&quot;: 14.3,
+      &quot;forward_m_per_h&quot;: -0.04000000000000625,
+      &quot;backward_m_per_h&quot;: 0.12000000000000455,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: -0.6400000000000432,
+      &quot;fitted_m&quot;: 14.268248119520138,
+      &quot;residual_m&quot;: 0.031751880479863104
+    },
+    {
+      &quot;reading&quot;: 23,
+      &quot;time_hours&quot;: 5.5,
+      &quot;depth_m&quot;: 14.29,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: -0.04000000000000625,
+      &quot;central_m_per_h&quot;: -0.020000000000003126,
+      &quot;second_m_per_h2&quot;: 0.160000000000025,
+      &quot;fitted_m&quot;: 14.271503802980199,
+      &quot;residual_m&quot;: 0.01849619701980032
+    },
+    {
+      &quot;reading&quot;: 24,
+      &quot;time_hours&quot;: 5.75,
+      &quot;depth_m&quot;: 14.29,
+      &quot;forward_m_per_h&quot;: -0.11999999999999744,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: -0.05999999999999872,
+      &quot;second_m_per_h2&quot;: -0.47999999999998977,
+      &quot;fitted_m&quot;: 14.274790684605536,
+      &quot;residual_m&quot;: 0.015209315394463019
+    },
+    {
+      &quot;reading&quot;: 25,
+      &quot;time_hours&quot;: 6.0,
+      &quot;depth_m&quot;: 14.26,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: -0.11999999999999744,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.799999999999983,
+      &quot;fitted_m&quot;: 14.278107715339805,
+      &quot;residual_m&quot;: -0.018107715339805708
+    },
+    {
+      &quot;reading&quot;: 26,
+      &quot;time_hours&quot;: 6.25,
+      &quot;depth_m&quot;: 14.28,
+      &quot;forward_m_per_h&quot;: 0.0800000000000054,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.08000000000000185,
+      &quot;second_m_per_h2&quot;: 2.842170943040401e-14,
+      &quot;fitted_m&quot;: 14.28145379942896,
+      &quot;residual_m&quot;: -0.0014537994289600675
+    },
+    {
+      &quot;reading&quot;: 27,
+      &quot;time_hours&quot;: 6.5,
+      &quot;depth_m&quot;: 14.3,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.0800000000000054,
+      &quot;central_m_per_h&quot;: 0.0400000000000027,
+      &quot;second_m_per_h2&quot;: -0.3200000000000216,
+      &quot;fitted_m&quot;: 14.284827795481048,
+      &quot;residual_m&quot;: 0.015172204518952626
+    },
+    {
+      &quot;reading&quot;: 28,
+      &quot;time_hours&quot;: 6.75,
+      &quot;depth_m&quot;: 14.3,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.1599999999999966,
+      &quot;fitted_m&quot;: 14.288228517669937,
+      &quot;residual_m&quot;: 0.01177148233006342
+    },
+    {
+      &quot;reading&quot;: 29,
+      &quot;time_hours&quot;: 7.0,
+      &quot;depth_m&quot;: 14.31,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.0,
+      &quot;fitted_m&quot;: 14.291654737081934,
+      &quot;residual_m&quot;: 0.01834526291806604
+    },
+    {
+      &quot;reading&quot;: 30,
+      &quot;time_hours&quot;: 7.25,
+      &quot;depth_m&quot;: 14.32,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.295105183203612,
+      &quot;residual_m&quot;: 0.024894816796388497
+    },
+    {
+      &quot;reading&quot;: 31,
+      &quot;time_hours&quot;: 7.5,
+      &quot;depth_m&quot;: 14.32,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.298578545548295,
+      &quot;residual_m&quot;: 0.021421454451704847
+    },
+    {
+      &quot;reading&quot;: 32,
+      &quot;time_hours&quot;: 7.75,
+      &quot;depth_m&quot;: 14.31,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.1599999999999966,
+      &quot;fitted_m&quot;: 14.302073475417991,
+      &quot;residual_m&quot;: 0.007926524582009264
+    },
+    {
+      &quot;reading&quot;: 33,
+      &quot;time_hours&quot;: 8.0,
+      &quot;depth_m&quot;: 14.31,
+      &quot;forward_m_per_h&quot;: -0.0800000000000054,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: -0.0400000000000027,
+      &quot;second_m_per_h2&quot;: -0.3200000000000216,
+      &quot;fitted_m&quot;: 14.305588587796747,
+      &quot;residual_m&quot;: 0.004411412203253917
+    },
+    {
+      &quot;reading&quot;: 34,
+      &quot;time_hours&quot;: 8.25,
+      &quot;depth_m&quot;: 14.29,
+      &quot;forward_m_per_h&quot;: 0.04000000000000625,
+      &quot;backward_m_per_h&quot;: -0.0800000000000054,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.4800000000000466,
+      &quot;fitted_m&quot;: 14.309122463370661,
+      &quot;residual_m&quot;: -0.019122463370662146
+    },
+    {
+      &quot;reading&quot;: 35,
+      &quot;time_hours&quot;: 8.5,
+      &quot;depth_m&quot;: 14.3,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.04000000000000625,
+      &quot;central_m_per_h&quot;: 0.060000000000002274,
+      &quot;second_m_per_h2&quot;: 0.15999999999996817,
+      &quot;fitted_m&quot;: 14.31267365066908,
+      &quot;residual_m&quot;: -0.012673650669078995
+    },
+    {
+      &quot;reading&quot;: 36,
+      &quot;time_hours&quot;: 8.75,
+      &quot;depth_m&quot;: 14.32,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.05999999999999872,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.316240668320738,
+      &quot;residual_m&quot;: 0.0037593316792623455
+    },
+    {
+      &quot;reading&quot;: 37,
+      &quot;time_hours&quot;: 9.0,
+      &quot;depth_m&quot;: 14.33,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.31982200741796,
+      &quot;residual_m&quot;: 0.010177992582040218
+    },
+    {
+      &quot;reading&quot;: 38,
+      &quot;time_hours&quot;: 9.25,
+      &quot;depth_m&quot;: 14.33,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.323416133981354,
+      &quot;residual_m&quot;: 0.006583866018646134
+    },
+    {
+      &quot;reading&quot;: 39,
+      &quot;time_hours&quot;: 9.5,
+      &quot;depth_m&quot;: 14.32,
+      &quot;forward_m_per_h&quot;: -0.0799999999999983,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.05999999999999872,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.327021491516804,
+      &quot;residual_m&quot;: -0.00702149151680409
+    },
+    {
+      &quot;reading&quot;: 40,
+      &quot;time_hours&quot;: 9.75,
+      &quot;depth_m&quot;: 14.3,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: -0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.6399999999999864,
+      &quot;fitted_m&quot;: 14.330636503656025,
+      &quot;residual_m&quot;: -0.03063650365602477
+    },
+    {
+      &quot;reading&quot;: 41,
+      &quot;time_hours&quot;: 10.0,
+      &quot;depth_m&quot;: 14.32,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.0799999999999983,
+      &quot;second_m_per_h2&quot;: 0.0,
+      &quot;fitted_m&quot;: 14.334259576871357,
+      &quot;residual_m&quot;: -0.014259576871356927
+    },
+    {
+      &quot;reading&quot;: 42,
+      &quot;time_hours&quot;: 10.25,
+      &quot;depth_m&quot;: 14.34,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.47999999999998977,
+      &quot;fitted_m&quot;: 14.337889103255067,
+      &quot;residual_m&quot;: 0.002110896744932589
+    },
+    {
+      &quot;reading&quot;: 43,
+      &quot;time_hours&quot;: 10.5,
+      &quot;depth_m&quot;: 14.33,
+      &quot;forward_m_per_h&quot;: -0.0799999999999983,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.05999999999999872,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.341523463352983,
+      &quot;residual_m&quot;: -0.011523463352983043
+    },
+    {
+      &quot;reading&quot;: 44,
+      &quot;time_hours&quot;: 10.75,
+      &quot;depth_m&quot;: 14.31,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: -0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.6399999999999864,
+      &quot;fitted_m&quot;: 14.345161029041906,
+      &quot;residual_m&quot;: -0.03516102904190532
+    },
+    {
+      &quot;reading&quot;: 45,
+      &quot;time_hours&quot;: 11.0,
+      &quot;depth_m&quot;: 14.33,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.05999999999999872,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.34880016644002,
+      &quot;residual_m&quot;: -0.018800166440019694
+    },
+    {
+      &quot;reading&quot;: 46,
+      &quot;time_hours&quot;: 11.25,
+      &quot;depth_m&quot;: 14.34,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.352439238839263,
+      &quot;residual_m&quot;: -0.012439238839263567
+    },
+    {
+      &quot;reading&quot;: 47,
+      &quot;time_hours&quot;: 11.5,
+      &quot;depth_m&quot;: 14.34,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.1599999999999966,
+      &quot;fitted_m&quot;: 14.356076609648495,
+      &quot;residual_m&quot;: -0.01607660964849522
+    },
+    {
+      &quot;reading&quot;: 48,
+      &quot;time_hours&quot;: 11.75,
+      &quot;depth_m&quot;: 14.35,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: -0.3199999999999932,
+      &quot;fitted_m&quot;: 14.359710645336206,
+      &quot;residual_m&quot;: -0.009710645336205914
+    },
+    {
+      &quot;reading&quot;: 49,
+      &quot;time_hours&quot;: 12.0,
+      &quot;depth_m&quot;: 14.34,
+      &quot;forward_m_per_h&quot;: 0.1600000000000037,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.060000000000002274,
+      &quot;second_m_per_h2&quot;: 0.8000000000000114,
+      &quot;fitted_m&quot;: 14.363339718361551,
+      &quot;residual_m&quot;: -0.023339718361551576
+    },
+    {
+      &quot;reading&quot;: 50,
+      &quot;time_hours&quot;: 12.25,
+      &quot;depth_m&quot;: 14.38,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.1600000000000037,
+      &quot;central_m_per_h&quot;: 0.08000000000000185,
+      &quot;second_m_per_h2&quot;: -0.6400000000000148,
+      &quot;fitted_m&quot;: 14.366962210082542,
+      &quot;residual_m&quot;: 0.013037789917458298
+    },
+    {
+      &quot;reading&quot;: 51,
+      &quot;time_hours&quot;: 12.5,
+      &quot;depth_m&quot;: 14.38,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.1599999999999966,
+      &quot;fitted_m&quot;: 14.370576513630384,
+      &quot;residual_m&quot;: 0.00942348636961654
+    },
+    {
+      &quot;reading&quot;: 52,
+      &quot;time_hours&quot;: 12.75,
+      &quot;depth_m&quot;: 14.39,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.374181036739163,
+      &quot;residual_m&quot;: 0.01581896326083765
+    },
+    {
+      &quot;reading&quot;: 53,
+      &quot;time_hours&quot;: 13.0,
+      &quot;depth_m&quot;: 14.39,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.0,
+      &quot;fitted_m&quot;: 14.377774204520396,
+      &quot;residual_m&quot;: 0.012225795479604784
+    },
+    {
+      &quot;reading&quot;: 54,
+      &quot;time_hours&quot;: 13.25,
+      &quot;depth_m&quot;: 14.39,
+      &quot;forward_m_per_h&quot;: -0.0800000000000054,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: -0.0400000000000027,
+      &quot;second_m_per_h2&quot;: -0.3200000000000216,
+      &quot;fitted_m&quot;: 14.381354462172284,
+      &quot;residual_m&quot;: 0.008645537827716154
+    },
+    {
+      &quot;reading&quot;: 55,
+      &quot;time_hours&quot;: 13.5,
+      &quot;depth_m&quot;: 14.37,
+      &quot;forward_m_per_h&quot;: 0.04000000000000625,
+      &quot;backward_m_per_h&quot;: -0.0800000000000054,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.4800000000000466,
+      &quot;fitted_m&quot;: 14.384920277613965,
+      &quot;residual_m&quot;: -0.014920277613965638
+    },
+    {
+      &quot;reading&quot;: 56,
+      &quot;time_hours&quot;: 13.75,
+      &quot;depth_m&quot;: 14.38,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.04000000000000625,
+      &quot;central_m_per_h&quot;: 0.0400000000000027,
+      &quot;second_m_per_h2&quot;: -2.842170943040401e-14,
+      &quot;fitted_m&quot;: 14.388470144035487,
+      &quot;residual_m&quot;: -0.008470144035486626
+    },
+    {
+      &quot;reading&quot;: 57,
+      &quot;time_hours&quot;: 14.0,
+      &quot;depth_m&quot;: 14.39,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.392002582354817,
+      &quot;residual_m&quot;: -0.002002582354815985
+    },
+    {
+      &quot;reading&quot;: 58,
+      &quot;time_hours&quot;: 14.25,
+      &quot;depth_m&quot;: 14.39,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.0,
+      &quot;fitted_m&quot;: 14.39551614357372,
+      &quot;residual_m&quot;: -0.0055161435737201
+    },
+    {
+      &quot;reading&quot;: 59,
+      &quot;time_hours&quot;: 14.5,
+      &quot;depth_m&quot;: 14.39,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.399009411025036,
+      &quot;residual_m&quot;: -0.009009411025035163
+    },
+    {
+      &quot;reading&quot;: 60,
+      &quot;time_hours&quot;: 14.75,
+      &quot;depth_m&quot;: 14.41,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.0799999999999983,
+      &quot;second_m_per_h2&quot;: 0.0,
+      &quot;fitted_m&quot;: 14.402481002504443,
+      &quot;residual_m&quot;: 0.0075189974955574
+    },
+    {
+      &quot;reading&quot;: 61,
+      &quot;time_hours&quot;: 15.0,
+      &quot;depth_m&quot;: 14.43,
+      &quot;forward_m_per_h&quot;: -0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: -0.6399999999999864,
+      &quot;fitted_m&quot;: 14.405929572280634,
+      &quot;residual_m&quot;: 0.02407042771936574
+    },
+    {
+      &quot;reading&quot;: 62,
+      &quot;time_hours&quot;: 15.25,
+      &quot;depth_m&quot;: 14.41,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: -0.0799999999999983,
+      &quot;central_m_per_h&quot;: -0.05999999999999872,
+      &quot;second_m_per_h2&quot;: 0.1599999999999966,
+      &quot;fitted_m&quot;: 14.409353812978377,
+      &quot;residual_m&quot;: 0.0006461870216227794
+    },
+    {
+      &quot;reading&quot;: 63,
+      &quot;time_hours&quot;: 15.5,
+      &quot;depth_m&quot;: 14.4,
+      &quot;forward_m_per_h&quot;: 0.11999999999999744,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.6399999999999864,
+      &quot;fitted_m&quot;: 14.41275245732984,
+      &quot;residual_m&quot;: -0.012752457329838762
+    },
+    {
+      &quot;reading&quot;: 64,
+      &quot;time_hours&quot;: 15.75,
+      &quot;depth_m&quot;: 14.43,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.11999999999999744,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: -0.6399999999999864,
+      &quot;fitted_m&quot;: 14.416124279790177,
+      &quot;residual_m&quot;: 0.013875720209822973
+    },
+    {
+      &quot;reading&quot;: 65,
+      &quot;time_hours&quot;: 16.0,
+      &quot;depth_m&quot;: 14.42,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.47999999999998977,
+      &quot;fitted_m&quot;: 14.41946809801421,
+      &quot;residual_m&quot;: 0.0005319019857896734
+    },
+    {
+      &quot;reading&quot;: 66,
+      &quot;time_hours&quot;: 16.25,
+      &quot;depth_m&quot;: 14.44,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.47999999999998977,
+      &quot;fitted_m&quot;: 14.422782774191777,
+      &quot;residual_m&quot;: 0.01721722580822238
+    },
+    {
+      &quot;reading&quot;: 67,
+      &quot;time_hours&quot;: 16.5,
+      &quot;depth_m&quot;: 14.43,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.0,
+      &quot;fitted_m&quot;: 14.426067216240032,
+      &quot;residual_m&quot;: 0.003932783759967862
+    },
+    {
+      &quot;reading&quot;: 68,
+      &quot;time_hours&quot;: 16.75,
+      &quot;depth_m&quot;: 14.42,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.42932037885181,
+      &quot;residual_m&quot;: -0.009320378851809252
+    },
+    {
+      &quot;reading&quot;: 69,
+      &quot;time_hours&quot;: 17.0,
+      &quot;depth_m&quot;: 14.43,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.05999999999999872,
+      &quot;second_m_per_h2&quot;: 0.1599999999999966,
+      &quot;fitted_m&quot;: 14.432541264399786,
+      &quot;residual_m&quot;: -0.0025412643997864137
+    },
+    {
+      &quot;reading&quot;: 70,
+      &quot;time_hours&quot;: 17.25,
+      &quot;depth_m&quot;: 14.45,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: -0.3199999999999932,
+      &quot;fitted_m&quot;: 14.435728923696958,
+      &quot;residual_m&quot;: 0.014271076303041141
+    },
+    {
+      &quot;reading&quot;: 71,
+      &quot;time_hours&quot;: 17.5,
+      &quot;depth_m&quot;: 14.45,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.438882456614577,
+      &quot;residual_m&quot;: 0.01111754338542248
+    },
+    {
+      &quot;reading&quot;: 72,
+      &quot;time_hours&quot;: 17.75,
+      &quot;depth_m&quot;: 14.44,
+      &quot;forward_m_per_h&quot;: -0.0799999999999983,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.05999999999999872,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.442001012559379,
+      &quot;residual_m&quot;: -0.002001012559379234
+    },
+    {
+      &quot;reading&quot;: 73,
+      &quot;time_hours&quot;: 18.0,
+      &quot;depth_m&quot;: 14.42,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: -0.0799999999999983,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.47999999999998977,
+      &quot;fitted_m&quot;: 14.44508379081248,
+      &quot;residual_m&quot;: -0.0250837908124808
+    },
+    {
+      &quot;reading&quot;: 74,
+      &quot;time_hours&quot;: 18.25,
+      &quot;depth_m&quot;: 14.43,
+      &quot;forward_m_per_h&quot;: 0.12000000000000455,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.08000000000000185,
+      &quot;second_m_per_h2&quot;: 0.3200000000000216,
+      &quot;fitted_m&quot;: 14.448130040732995,
+      &quot;residual_m&quot;: -0.018130040732994956
+    },
+    {
+      &quot;reading&quot;: 75,
+      &quot;time_hours&quot;: 18.5,
+      &quot;depth_m&quot;: 14.46,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.12000000000000455,
+      &quot;central_m_per_h&quot;: 0.10000000000000142,
+      &quot;second_m_per_h2&quot;: -0.160000000000025,
+      &quot;fitted_m&quot;: 14.451139061829819,
+      &quot;residual_m&quot;: 0.008860938170181853
+    },
+    {
+      &quot;reading&quot;: 76,
+      &quot;time_hours&quot;: 18.75,
+      &quot;depth_m&quot;: 14.48,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.47999999999998977,
+      &quot;fitted_m&quot;: 14.454110203705685,
+      &quot;residual_m&quot;: 0.025889796294315204
+    },
+    {
+      &quot;reading&quot;: 77,
+      &quot;time_hours&quot;: 19.0,
+      &quot;depth_m&quot;: 14.47,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.0,
+      &quot;fitted_m&quot;: 14.457042865877884,
+      &quot;residual_m&quot;: 0.012957134122116187
+    },
+    {
+      &quot;reading&quot;: 78,
+      &quot;time_hours&quot;: 19.25,
+      &quot;depth_m&quot;: 14.46,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.47999999999998977,
+      &quot;fitted_m&quot;: 14.459936497480534,
+      &quot;residual_m&quot;: 6.350251946685148e-05
+    },
+    {
+      &quot;reading&quot;: 79,
+      &quot;time_hours&quot;: 19.5,
+      &quot;depth_m&quot;: 14.48,
+      &quot;forward_m_per_h&quot;: -0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: -0.6399999999999864,
+      &quot;fitted_m&quot;: 14.462790596853631,
+      &quot;residual_m&quot;: 0.017209403146368984
+    },
+    {
+      &quot;reading&quot;: 80,
+      &quot;time_hours&quot;: 19.75,
+      &quot;depth_m&quot;: 14.46,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: -0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.6399999999999864,
+      &quot;fitted_m&quot;: 14.465604711024383,
+      &quot;residual_m&quot;: -0.005604711024382425
+    },
+    {
+      &quot;reading&quot;: 81,
+      &quot;time_hours&quot;: 20.0,
+      &quot;depth_m&quot;: 14.48,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: -0.3199999999999932,
+      &quot;fitted_m&quot;: 14.46837843508662,
+      &quot;residual_m&quot;: 0.011621564913379956
+    },
+    {
+      &quot;reading&quot;: 82,
+      &quot;time_hours&quot;: 20.25,
+      &quot;depth_m&quot;: 14.48,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.1599999999999966,
+      &quot;fitted_m&quot;: 14.471111411484282,
+      &quot;residual_m&quot;: 0.00888858851571861
+    },
+    {
+      &quot;reading&quot;: 83,
+      &quot;time_hours&quot;: 20.5,
+      &quot;depth_m&quot;: 14.49,
+      &quot;forward_m_per_h&quot;: -0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.47999999999998977,
+      &quot;fitted_m&quot;: 14.473803329205142,
+      &quot;residual_m&quot;: 0.016196670794858647
+    },
+    {
+      &quot;reading&quot;: 84,
+      &quot;time_hours&quot;: 20.75,
+      &quot;depth_m&quot;: 14.47,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: -0.0799999999999983,
+      &quot;central_m_per_h&quot;: -0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.476453922891075,
+      &quot;residual_m&quot;: -0.006453922891074271
+    },
+    {
+      &quot;reading&quot;: 85,
+      &quot;time_hours&quot;: 21.0,
+      &quot;depth_m&quot;: 14.47,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.0,
+      &quot;fitted_m&quot;: 14.479062971871228,
+      &quot;residual_m&quot;: -0.009062971871227177
+    },
+    {
+      &quot;reading&quot;: 86,
+      &quot;time_hours&quot;: 21.25,
+      &quot;depth_m&quot;: 14.47,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.48163029912453,
+      &quot;residual_m&quot;: -0.011630299124529841
+    },
+    {
+      &quot;reading&quot;: 87,
+      &quot;time_hours&quot;: 21.5,
+      &quot;depth_m&quot;: 14.49,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.47999999999998977,
+      &quot;fitted_m&quot;: 14.484155770177948,
+      &quot;residual_m&quot;: 0.005844229822052682
+    },
+    {
+      &quot;reading&quot;: 88,
+      &quot;time_hours&quot;: 21.75,
+      &quot;depth_m&quot;: 14.48,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.1599999999999966,
+      &quot;fitted_m&quot;: 14.486639291946885,
+      &quot;residual_m&quot;: -0.006639291946884285
+    },
+    {
+      &quot;reading&quot;: 89,
+      &quot;time_hours&quot;: 22.0,
+      &quot;depth_m&quot;: 14.48,
+      &quot;forward_m_per_h&quot;: 0.0,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.0,
+      &quot;fitted_m&quot;: 14.489080811524047,
+      &quot;residual_m&quot;: -0.00908081152404705
+    },
+    {
+      &quot;reading&quot;: 90,
+      &quot;time_hours&quot;: 22.25,
+      &quot;depth_m&quot;: 14.48,
+      &quot;forward_m_per_h&quot;: 0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.0,
+      &quot;central_m_per_h&quot;: 0.03999999999999915,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.491480314923008,
+      &quot;residual_m&quot;: -0.011480314923007384
+    },
+    {
+      &quot;reading&quot;: 91,
+      &quot;time_hours&quot;: 22.5,
+      &quot;depth_m&quot;: 14.5,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.0799999999999983,
+      &quot;central_m_per_h&quot;: 0.05999999999999872,
+      &quot;second_m_per_h2&quot;: -0.1599999999999966,
+      &quot;fitted_m&quot;: 14.493837825782537,
+      &quot;residual_m&quot;: 0.006162174217463345
+    },
+    {
+      &quot;reading&quot;: 92,
+      &quot;time_hours&quot;: 22.75,
+      &quot;depth_m&quot;: 14.51,
+      &quot;forward_m_per_h&quot;: -0.0799999999999983,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: -0.47999999999998977,
+      &quot;fitted_m&quot;: 14.496153404037706,
+      &quot;residual_m&quot;: 0.013846595962293762
+    },
+    {
+      &quot;reading&quot;: 93,
+      &quot;time_hours&quot;: 23.0,
+      &quot;depth_m&quot;: 14.49,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: -0.0799999999999983,
+      &quot;central_m_per_h&quot;: -0.019999999999999574,
+      &quot;second_m_per_h2&quot;: 0.47999999999998977,
+      &quot;fitted_m&quot;: 14.498427144563466,
+      &quot;residual_m&quot;: -0.008427144563466271
+    },
+    {
+      &quot;reading&quot;: 94,
+      &quot;time_hours&quot;: 23.25,
+      &quot;depth_m&quot;: 14.5,
+      &quot;forward_m_per_h&quot;: -0.03999999999999915,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: -0.3199999999999932,
+      &quot;fitted_m&quot;: 14.500659175796336,
+      &quot;residual_m&quot;: -0.000659175796336342
+    },
+    {
+      &quot;reading&quot;: 95,
+      &quot;time_hours&quot;: 23.5,
+      &quot;depth_m&quot;: 14.49,
+      &quot;forward_m_per_h&quot;: 0.03999999999999915,
+      &quot;backward_m_per_h&quot;: -0.03999999999999915,
+      &quot;central_m_per_h&quot;: 0.0,
+      &quot;second_m_per_h2&quot;: 0.3199999999999932,
+      &quot;fitted_m&quot;: 14.502849658339514,
+      &quot;residual_m&quot;: -0.012849658339513681
+    },
+    {
+      &quot;reading&quot;: 96,
+      &quot;time_hours&quot;: 23.75,
+      &quot;depth_m&quot;: 14.5,
+      &quot;forward_m_per_h&quot;: null,
+      &quot;backward_m_per_h&quot;: 0.03999999999999915,
+      &quot;central_m_per_h&quot;: null,
+      &quot;second_m_per_h2&quot;: null,
+      &quot;fitted_m&quot;: 14.504998783556587,
+      &quot;residual_m&quot;: -0.004998783556587227
+    }
+  ]
+}
+</script>
+
+</body>
+</html>
